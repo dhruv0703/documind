@@ -28,13 +28,18 @@ spring:
       write-dates-as-timestamps: false
   ai:
     openai:
-      api-key: ${SPRING_AI_OPENAI_API_KEY:}
+      api-key: ${GEMINI_API_KEY:${SPRING_AI_OPENAI_API_KEY:}}
       chat:
+        base-url: ${GEMINI_OPENAI_BASE_URL:https://generativelanguage.googleapis.com/v1beta/openai}
+        completions-path: ${GEMINI_CHAT_COMPLETIONS_PATH:/chat/completions}
         options:
-          model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+          model: ${GEMINI_CHAT_MODEL:${OPENAI_CHAT_MODEL:gemini-3.5-flash}}
       embedding:
+        base-url: ${GEMINI_OPENAI_BASE_URL:https://generativelanguage.googleapis.com/v1beta/openai}
+        embeddings-path: ${GEMINI_EMBEDDINGS_PATH:/embeddings}
         options:
-          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+          model: ${GEMINI_EMBEDDING_MODEL:${OPENAI_EMBEDDING_MODEL:gemini-embedding-001}}
+          dimensions: ${RAG_EMBEDDING_DIMENSION:1536}
 
 server:
   port: ${SERVER_PORT:${PORT:8080}}

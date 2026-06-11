@@ -38,9 +38,9 @@ jobs:
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
-            SPRING_AI_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-            OPENAI_CHAT_MODEL=gpt-4o-mini
-            OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            GEMINI_CHAT_MODEL=gemini-3.5-flash
+            GEMINI_EMBEDDING_MODEL=gemini-embedding-001
             APP_AI_CHAT_ENABLED=true
             APP_AI_EMBEDDINGS_ENABLED=true
             STORAGE_PROVIDER=s3

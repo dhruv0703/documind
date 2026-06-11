@@ -13,10 +13,10 @@ User
   -> Spring AI embeddings
   -> RDS PostgreSQL pgvector
   -> Semantic Search
-  -> OpenAI / AWS Bedrock-ready answer generation
+  -> Gemini / AWS Bedrock-ready answer generation
 ```
 
-Current implementation uses Spring AI with OpenAI models for embeddings and chat orchestration. The service boundaries are intentionally structured so AWS Bedrock can be introduced without rewriting the application architecture.
+Current implementation uses Spring AI with Gemini models through Google’s OpenAI-compatible endpoint for embeddings and chat orchestration. The service boundaries are intentionally structured so AWS Bedrock can be introduced without rewriting the application architecture.
 
 ## Features
 
@@ -25,7 +25,7 @@ Current implementation uses Spring AI with OpenAI models for embeddings and chat
 - Local storage for development and Amazon S3 storage for deployment
 - PDF text extraction using Apache PDFBox
 - Paragraph-aware text chunking with overlap for RAG retrieval quality
-- Embedding generation using Spring AI and `text-embedding-3-small`
+- Embedding generation using Spring AI and Gemini embeddings
 - PostgreSQL `pgvector` semantic search with cosine similarity
 - RAG answer generation with source-grounded snippets
 - Polished React dashboard with landing page, auth, documents, and chat views
@@ -39,7 +39,7 @@ Current implementation uses Spring AI with OpenAI models for embeddings and chat
 | --- | --- | --- |
 | Backend | Java 21, Spring Boot 3.5, Maven | Core API, dependency management, application runtime |
 | Security | Spring Security, JWT, BCrypt | Authentication, authorization, password hashing |
-| AI / RAG | Spring AI, OpenAI embeddings/chat | Embeddings, retrieval orchestration, answer generation |
+| AI / RAG | Spring AI, Gemini embeddings/chat | Embeddings, retrieval orchestration, answer generation |
 | Database | PostgreSQL, pgvector, Spring Data JPA, JdbcTemplate | Document metadata, chunk storage, vector search |
 | File Processing | Apache PDFBox | PDF parsing and text extraction |
 | Storage | Amazon S3, local filesystem fallback | Uploaded PDF storage |
@@ -66,7 +66,7 @@ POSTGRES_DB=documind
 POSTGRES_USER=documind
 POSTGRES_PASSWORD=documind
 JWT_SECRET=change-this-secret
-SPRING_AI_OPENAI_API_KEY=your-openai-key
+GEMINI_API_KEY=your-gemini-key
 STORAGE_PROVIDER=local
 AWS_REGION=us-west-2
 AWS_S3_BUCKET=your-bucket-name
@@ -80,9 +80,9 @@ SPRING_PROFILES_ACTIVE=local
 DB_URL=jdbc:postgresql://localhost:5432/documind
 DB_USERNAME=documind
 DB_PASSWORD=documind
-SPRING_AI_OPENAI_API_KEY=replace-me
-OPENAI_CHAT_MODEL=gpt-4o-mini
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+GEMINI_API_KEY=replace-me
+GEMINI_CHAT_MODEL=gemini-3.5-flash
+GEMINI_EMBEDDING_MODEL=gemini-embedding-001
 APP_AI_CHAT_ENABLED=true
 APP_AI_EMBEDDINGS_ENABLED=true
 JWT_SECRET=replace-with-a-long-random-secret
@@ -332,7 +332,7 @@ The repository includes:
 - `EC2_HOST`
 - `EC2_USER`
 - `EC2_SSH_KEY`
-- `OPENAI_API_KEY`
+- `GEMINI_API_KEY`
 - `JWT_SECRET`
 - `AWS_REGION`
 - `AWS_S3_BUCKET`
@@ -361,29 +361,23 @@ The repository includes a `render.yaml` blueprint for a recruiter-demo deploymen
 - `documind-backend`: free web service
 - Neon Postgres: external managed database
 
-### Demo Mode Defaults
+### Render Defaults
 
-The Render blueprint is configured for a demo-oriented deployment:
+The Render blueprint is configured to use:
 
 - `SPRING_PROFILES_ACTIVE=local`
-- `APP_AI_CHAT_ENABLED=false`
-- `APP_AI_EMBEDDINGS_ENABLED=false`
+- `APP_AI_CHAT_ENABLED=true`
+- `APP_AI_EMBEDDINGS_ENABLED=true`
 - `STORAGE_PROVIDER=local`
 
-In this mode:
-
-- uploads still work
-- documents are chunked and searchable
-- retrieval falls back to keyword matching instead of OpenAI embeddings
-- answers return a mock summary built from retrieved chunks
-- uploaded PDF files are stored only temporarily on the backend filesystem
+The backend also expects `GEMINI_API_KEY` to be set in Render.
 
 ### Render Deploy Steps
 
 1. Push this repository to GitHub.
 2. In Render, create a new Blueprint and select this repository.
 3. Review the generated resources from `render.yaml`.
-4. Set the backend environment variable `DATABASE_URL` to your Neon connection string.
+4. Set the backend environment variables `DATABASE_URL` and `GEMINI_API_KEY`.
 5. In Neon, ensure the `vector` extension exists:
 
 ```sql
@@ -401,6 +395,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 - Free Render web services spin down after 15 minutes of inactivity, so the first request after idle will be slow.
 - Free Render web services use an ephemeral filesystem, so uploaded PDF files can disappear after restart or spin-down.
 - The backend accepts either `DB_URL` directly or `DATABASE_URL`; on Render, a `postgresql://...` `DATABASE_URL` is converted to JDBC form automatically.
+- Gemini is wired through Google’s OpenAI-compatible endpoint, so the app still uses Spring AI’s OpenAI client configuration internally.
 - If your Neon database is in a different region than the Render backend, expect higher latency.
 
 ## Resume Bullets for Dhruv Shah

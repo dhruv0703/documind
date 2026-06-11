@@ -35,7 +35,7 @@ services:
       DB_USERNAME: ${POSTGRES_USER:-documind}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-documind}
       JWT_SECRET: ${JWT_SECRET:-documind-local-jwt-secret-documind-local-jwt-secret}
-      SPRING_AI_OPENAI_API_KEY: ${SPRING_AI_OPENAI_API_KEY:-local-dev-placeholder-key}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       APP_AI_EMBEDDINGS_ENABLED: ${APP_AI_EMBEDDINGS_ENABLED:-false}
       APP_AI_CHAT_ENABLED: ${APP_AI_CHAT_ENABLED:-false}
       STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}

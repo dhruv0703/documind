@@ -34,7 +34,7 @@ public class EmbeddingServiceImpl implements EmbeddingService {
             return toDoubleList(model.embed(text));
         } catch (RuntimeException ex) {
             log.error("Embedding generation failed for a single chunk", ex);
-            throw new DocumentProcessingException("Failed to generate embeddings from OpenAI");
+            throw new DocumentProcessingException("Failed to generate embeddings from the configured AI provider");
         }
     }
 
@@ -47,7 +47,7 @@ public class EmbeddingServiceImpl implements EmbeddingService {
                     .toList();
         } catch (RuntimeException ex) {
             log.error("Embedding generation failed for {} chunks", chunks.size(), ex);
-            throw new DocumentProcessingException("Failed to generate embeddings from OpenAI");
+            throw new DocumentProcessingException("Failed to generate embeddings from the configured AI provider");
         }
     }
 
@@ -56,7 +56,7 @@ public class EmbeddingServiceImpl implements EmbeddingService {
             throw new DocumentProcessingException("Embeddings are disabled for the current environment");
         }
         if (embeddingModel == null) {
-            throw new DocumentProcessingException("Embedding model is unavailable because no OpenAI API key is configured");
+            throw new DocumentProcessingException("Embedding model is unavailable because no Gemini API key is configured");
         }
         return embeddingModel;
     }
@@ -66,7 +66,7 @@ public class EmbeddingServiceImpl implements EmbeddingService {
             return embeddingModelProvider.getIfAvailable();
         } catch (BeansException ex) {
             if (!appProperties.getAi().getEmbeddings().isEnabled()) {
-                log.warn("Embedding model unavailable while embeddings are disabled; continuing without OpenAI embeddings");
+                log.warn("Embedding model unavailable while embeddings are disabled; continuing without provider embeddings");
                 return null;
             }
             throw ex;
