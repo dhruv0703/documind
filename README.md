@@ -346,6 +346,64 @@ The repository includes:
 - `REGISTRY_USERNAME`
 - `REGISTRY_PASSWORD`
 
+## Render Deployment
+
+The repository includes a `render.yaml` blueprint for a recruiter-demo deployment on Render with:
+
+- frontend as a static site
+- backend as a Docker web service
+- Render Postgres with `pgvector`
+- local upload storage on a persistent disk
+
+### Recommended Render Shape
+
+- `documind-frontend`: static site
+- `documind-backend`: paid `starter` web service with a 1 GB disk
+- `documind-postgres`: free Render Postgres instance
+
+Why the backend uses a paid plan:
+
+- Render free web services use an ephemeral filesystem
+- uploaded PDFs would be lost on restart or idle spin-down without a persistent disk
+
+### Demo Mode Defaults
+
+The Render blueprint is configured for a demo-oriented deployment:
+
+- `SPRING_PROFILES_ACTIVE=local`
+- `APP_AI_CHAT_ENABLED=false`
+- `APP_AI_EMBEDDINGS_ENABLED=false`
+- `STORAGE_PROVIDER=local`
+
+In this mode:
+
+- uploads still work
+- documents are chunked and searchable
+- retrieval falls back to keyword matching instead of OpenAI embeddings
+- answers return a mock summary built from retrieved chunks
+
+### Render Deploy Steps
+
+1. Push this repository to GitHub.
+2. In Render, create a new Blueprint and select this repository.
+3. Review the generated resources from `render.yaml`.
+4. Keep the backend on `starter` so uploads persist on the attached disk.
+5. After the first deploy, open the backend database and ensure the `vector` extension exists:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+6. Open the frontend URL and register a user.
+7. Upload a sample PDF and test the chat flow.
+
+### Render Notes
+
+- The blueprint sets frontend `VITE_API_BASE_URL` to `https://documind-backend.onrender.com`.
+- If Render assigns a different backend subdomain, update `VITE_API_BASE_URL` in the frontend service and redeploy it.
+- The backend CORS setting allows `https://*.onrender.com` for demo hosting.
+- Free Render Postgres expires after 30 days, so this setup is for demos, not long-term storage.
+
 ## Resume Bullets for Dhruv Shah
 
 - Built a production-style Retrieval-Augmented Generation platform using Java 21, Spring Boot, Spring AI, PostgreSQL `pgvector`, React, and Amazon S3 to support secure question-answering over uploaded PDF documents.
