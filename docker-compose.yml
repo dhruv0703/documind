@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: documind-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-documind}
+      POSTGRES_USER: ${POSTGRES_USER:-documind}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-documind}
+    ports:
+      - "${POSTGRES_HOST_PORT:-5433}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-documind} -d ${POSTGRES_DB:-documind}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: documind-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SERVER_PORT: 8080
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-documind}
+      DB_USERNAME: ${POSTGRES_USER:-documind}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-documind}
+      JWT_SECRET: ${JWT_SECRET:-documind-local-jwt-secret-documind-local-jwt-secret}
+      SPRING_AI_OPENAI_API_KEY: ${SPRING_AI_OPENAI_API_KEY:-local-dev-placeholder-key}
+      APP_AI_EMBEDDINGS_ENABLED: ${APP_AI_EMBEDDINGS_ENABLED:-false}
+      APP_AI_CHAT_ENABLED: ${APP_AI_CHAT_ENABLED:-false}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      AWS_REGION: ${AWS_REGION:-us-west-2}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-}
+      LOCAL_UPLOAD_DIR: uploads
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend-uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    container_name: documind-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  postgres-data:
+  backend-uploads:

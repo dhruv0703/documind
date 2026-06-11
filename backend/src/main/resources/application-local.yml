@@ -1,0 +1,21 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/documind}
+    username: ${DB_USERNAME:documind}
+    password: ${DB_PASSWORD:documind}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: true
+    show-sql: false
+  sql:
+    init:
+      mode: always
+
+logging:
+  level:
+    com.dhruv.documind: INFO

@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:documind;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+  ai:
+    openai:
+      api-key: test-key
+  sql:
+    init:
+      mode: never
+
+app:
+  ai:
+    chat:
+      enabled: false
+    embeddings:
+      enabled: false
+  jwt:
+    secret: test-secret-documind-test-secret-documind
+    expiration-ms: 86400000

@@ -1,0 +1,27 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj4 0 obj
+<< /Length 71 >>
+stream
+BT
+/F1 18 Tf
+72 720 Td
+(DocuMind sample PDF for extractor test.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobjxref
+0 6
+0000000000 65535 f 
+0000000009 00000 n `n0000000057 00000 n `n0000000113 00000 n `n0000000238 00000 n `n0000000358 00000 n `ntrailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+427
+%%EOF

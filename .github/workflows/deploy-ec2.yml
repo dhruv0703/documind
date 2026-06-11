@@ -1,0 +1,53 @@
+name: Deploy EC2
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2 over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            APP_DIR=/opt/documind
+
+            if [ ! -d "$APP_DIR/.git" ]; then
+              echo "Repository is missing at $APP_DIR"
+              exit 1
+            fi
+
+            cd "$APP_DIR"
+            git pull --ff-only
+
+            cat > .env <<EOF
+            SPRING_PROFILES_ACTIVE=aws
+            SERVER_PORT=8080
+            DB_URL=${{ secrets.DB_URL }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            SPRING_AI_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            OPENAI_CHAT_MODEL=gpt-4o-mini
+            OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+            APP_AI_CHAT_ENABLED=true
+            APP_AI_EMBEDDINGS_ENABLED=true
+            STORAGE_PROVIDER=s3
+            AWS_REGION=${{ secrets.AWS_REGION }}
+            AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}
+            LOCAL_UPLOAD_DIR=uploads
+            VITE_API_BASE_URL=http://${{ secrets.EC2_HOST }}:8080
+            EOF
+
+            docker compose --env-file .env -f infra/aws/production-docker-compose.yml up -d --build

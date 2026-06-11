@@ -1,0 +1,62 @@
+name: Docker Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to optional container registry
+        if: ${{ secrets.REGISTRY_HOST != '' && secrets.REGISTRY_USERNAME != '' && secrets.REGISTRY_PASSWORD != '' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_HOST }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: documind-backend:ci
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          build-args: |
+            VITE_API_BASE_URL=http://localhost:8080
+          push: false
+          tags: documind-frontend:ci
+
+      - name: Build and push backend image
+        if: ${{ secrets.REGISTRY_HOST != '' && secrets.REGISTRY_USERNAME != '' && secrets.REGISTRY_PASSWORD != '' }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ format('{0}/documind-backend:latest', secrets.REGISTRY_HOST) }}
+
+      - name: Build and push frontend image
+        if: ${{ secrets.REGISTRY_HOST != '' && secrets.REGISTRY_USERNAME != '' && secrets.REGISTRY_PASSWORD != '' }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          build-args: |
+            VITE_API_BASE_URL=http://localhost:8080
+          push: true
+          tags: ${{ format('{0}/documind-frontend:latest', secrets.REGISTRY_HOST) }}
