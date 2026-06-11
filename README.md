@@ -352,20 +352,14 @@ The repository includes a `render.yaml` blueprint for a recruiter-demo deploymen
 
 - frontend as a static site
 - backend as a Docker web service
-- Render Postgres with `pgvector`
+- external PostgreSQL such as Neon with `pgvector`
 - local upload storage on a persistent disk
 
 ### Recommended Render Shape
 
 - `documind-frontend`: static site
 - `documind-backend`: free web service
-- `documind-postgres`: free Render Postgres instance
-
-Why this setup is fully free:
-
-- frontend uses Render static hosting
-- backend uses a free Render web service
-- database uses free Render Postgres
+- Neon Postgres: external managed database
 
 ### Demo Mode Defaults
 
@@ -389,8 +383,8 @@ In this mode:
 1. Push this repository to GitHub.
 2. In Render, create a new Blueprint and select this repository.
 3. Review the generated resources from `render.yaml`.
-4. Keep the backend and database on the free plans if you want a zero-cost demo.
-5. After the first deploy, open the backend database and ensure the `vector` extension exists:
+4. Set the backend environment variable `DATABASE_URL` to your Neon connection string.
+5. In Neon, ensure the `vector` extension exists:
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -406,8 +400,8 @@ CREATE EXTENSION IF NOT EXISTS vector;
 - The backend CORS setting allows `https://*.onrender.com` for demo hosting.
 - Free Render web services spin down after 15 minutes of inactivity, so the first request after idle will be slow.
 - Free Render web services use an ephemeral filesystem, so uploaded PDF files can disappear after restart or spin-down.
-- Document metadata and indexed chunks remain in Render Postgres, so the chat demo can still work after upload processing completes.
-- Free Render Postgres expires after 30 days, so this setup is for demos, not long-term storage.
+- The backend accepts either `DB_URL` directly or `DATABASE_URL`; on Render, a `postgresql://...` `DATABASE_URL` is converted to JDBC form automatically.
+- If your Neon database is in a different region than the Render backend, expect higher latency.
 
 ## Resume Bullets for Dhruv Shah
 

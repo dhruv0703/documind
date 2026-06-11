@@ -8,8 +8,18 @@ if [ -n "${DATABASE_URL:-}" ] && [ -z "${DB_URL:-}" ]; then
       ;;
     postgresql://*)
       db_uri_without_scheme="${DATABASE_URL#postgresql://}"
+      db_credentials="${db_uri_without_scheme%%@*}"
       db_host_and_path="${db_uri_without_scheme#*@}"
+      db_host_and_path="$(printf '%s' "$db_host_and_path" | sed 's/channel_binding=/channelBinding=/g')"
       export DB_URL="jdbc:postgresql://${db_host_and_path}"
+
+      if [ -z "${DB_USERNAME:-}" ]; then
+        export DB_USERNAME="${db_credentials%%:*}"
+      fi
+
+      if [ -z "${DB_PASSWORD:-}" ]; then
+        export DB_PASSWORD="${db_credentials#*:}"
+      fi
       ;;
     *)
       export DB_URL="$DATABASE_URL"
