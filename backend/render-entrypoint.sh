@@ -7,7 +7,9 @@ if [ -n "${DATABASE_URL:-}" ] && [ -z "${DB_URL:-}" ]; then
       export DB_URL="$DATABASE_URL"
       ;;
     postgresql://*)
-      export DB_URL="jdbc:${DATABASE_URL}"
+      db_uri_without_scheme="${DATABASE_URL#postgresql://}"
+      db_host_and_path="${db_uri_without_scheme#*@}"
+      export DB_URL="jdbc:postgresql://${db_host_and_path}"
       ;;
     *)
       export DB_URL="$DATABASE_URL"
