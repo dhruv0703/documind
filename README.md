@@ -358,13 +358,14 @@ The repository includes a `render.yaml` blueprint for a recruiter-demo deploymen
 ### Recommended Render Shape
 
 - `documind-frontend`: static site
-- `documind-backend`: paid `starter` web service with a 1 GB disk
+- `documind-backend`: free web service
 - `documind-postgres`: free Render Postgres instance
 
-Why the backend uses a paid plan:
+Why this setup is fully free:
 
-- Render free web services use an ephemeral filesystem
-- uploaded PDFs would be lost on restart or idle spin-down without a persistent disk
+- frontend uses Render static hosting
+- backend uses a free Render web service
+- database uses free Render Postgres
 
 ### Demo Mode Defaults
 
@@ -381,13 +382,14 @@ In this mode:
 - documents are chunked and searchable
 - retrieval falls back to keyword matching instead of OpenAI embeddings
 - answers return a mock summary built from retrieved chunks
+- uploaded PDF files are stored only temporarily on the backend filesystem
 
 ### Render Deploy Steps
 
 1. Push this repository to GitHub.
 2. In Render, create a new Blueprint and select this repository.
 3. Review the generated resources from `render.yaml`.
-4. Keep the backend on `starter` so uploads persist on the attached disk.
+4. Keep the backend and database on the free plans if you want a zero-cost demo.
 5. After the first deploy, open the backend database and ensure the `vector` extension exists:
 
 ```sql
@@ -402,6 +404,9 @@ CREATE EXTENSION IF NOT EXISTS vector;
 - The blueprint sets frontend `VITE_API_BASE_URL` to `https://documind-backend.onrender.com`.
 - If Render assigns a different backend subdomain, update `VITE_API_BASE_URL` in the frontend service and redeploy it.
 - The backend CORS setting allows `https://*.onrender.com` for demo hosting.
+- Free Render web services spin down after 15 minutes of inactivity, so the first request after idle will be slow.
+- Free Render web services use an ephemeral filesystem, so uploaded PDF files can disappear after restart or spin-down.
+- Document metadata and indexed chunks remain in Render Postgres, so the chat demo can still work after upload processing completes.
 - Free Render Postgres expires after 30 days, so this setup is for demos, not long-term storage.
 
 ## Resume Bullets for Dhruv Shah
