@@ -14,6 +14,7 @@ export const AUTH_USER_KEY = 'documind.auth.user'
 export const QUESTION_HISTORY_KEY = 'documind.question.history'
 
 export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const apiTimeoutMs = Number(import.meta.env.VITE_API_TIMEOUT_MS || 65000)
 
 export type AppApiError = Error & {
   status?: number
@@ -22,7 +23,7 @@ export type AppApiError = Error & {
 
 const api = axios.create({
   baseURL: apiBaseUrl,
-  timeout: 15000,
+  timeout: apiTimeoutMs,
 })
 
 api.interceptors.request.use((config) => {
@@ -38,10 +39,11 @@ api.interceptors.request.use((config) => {
 function normalizeError(error: unknown): AppApiError {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<{ message?: string }>
-    const message =
-      axiosError.response?.data?.message ||
-      axiosError.message ||
-      'The request could not be completed.'
+    const message = axiosError.code === 'ECONNABORTED'
+      ? 'The backend is still waking up on Render. Please try again in a few seconds.'
+      : axiosError.response?.data?.message ||
+        axiosError.message ||
+        'The request could not be completed.'
 
     const appError = new Error(message) as AppApiError
     appError.status = axiosError.response?.status
