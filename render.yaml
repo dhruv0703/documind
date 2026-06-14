@@ -10,9 +10,13 @@ services:
     autoDeployTrigger: commit
     envVars:
       - key: SPRING_PROFILES_ACTIVE
-        value: local
+        value: aws
       - key: SERVER_PORT
         value: "10000"
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: validate
+      - key: SPRING_SQL_INIT_MODE
+        value: never
       - key: DATABASE_URL
         sync: false
       - key: GEMINI_API_KEY

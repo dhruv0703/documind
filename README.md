@@ -365,10 +365,12 @@ The repository includes a `render.yaml` blueprint for a recruiter-demo deploymen
 
 The Render blueprint is configured to use:
 
-- `SPRING_PROFILES_ACTIVE=local`
+- `SPRING_PROFILES_ACTIVE=aws`
 - `APP_AI_CHAT_ENABLED=true`
 - `APP_AI_EMBEDDINGS_ENABLED=true`
 - `STORAGE_PROVIDER=local`
+- `SPRING_JPA_HIBERNATE_DDL_AUTO=validate`
+- `SPRING_SQL_INIT_MODE=never`
 
 The backend also expects `GEMINI_API_KEY` to be set in Render.
 
