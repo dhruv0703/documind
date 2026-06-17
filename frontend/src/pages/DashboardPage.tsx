@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
-import { BrainCircuit, Database, Files, Sparkles } from 'lucide-react'
+import { BrainCircuit, Database, Files, ShieldCheck, Sparkles } from 'lucide-react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ActivityItem } from '../components/dashboard/ActivityItem'
 import { AskPanel } from '../components/dashboard/AskPanel'
@@ -13,6 +14,7 @@ import { Button } from '../components/ui/Button'
 import { useAuth } from '../auth/AuthContext'
 import { useWorkspace } from '../workspace/WorkspaceContext'
 import { buildDocumentsIndexedSeries, buildHeadlineStats, buildQuestionsAskedSeries } from '../dashboard/insights'
+import { formatDate } from '../lib/utils'
 import { useUiPreferences } from '../ui/UiPreferencesContext'
 
 export function DashboardPage() {
@@ -25,6 +27,12 @@ export function DashboardPage() {
   const headlineStats = buildHeadlineStats(stats, demoMetrics)
   const questionsSeries = buildQuestionsAskedSeries(questionHistory)
   const documentsSeries = buildDocumentsIndexedSeries(documents)
+  const latestUpload = documents[0] ?? null
+  const latestQuestion = questionHistory[0] ?? null
+  const readyDocuments = useMemo(
+    () => documents.filter((document) => document.status === 'READY').length,
+    [documents],
+  )
 
   return (
     <StaggerContainer className="space-y-6">
@@ -43,6 +51,34 @@ export function DashboardPage() {
             <p className="mt-5 max-w-2xl text-base leading-8 text-slate-200">
               Add documents, review indexed passages, and draft answers across your working library.
             </p>
+            <div className="mt-6 grid gap-3 md:grid-cols-3">
+              <div className="rounded-[20px] border border-white/10 bg-white/10 px-4 py-4 backdrop-blur">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-slate-300">
+                  <Files className="h-3.5 w-3.5 text-orange-200" />
+                  Last upload
+                </div>
+                <p className="mt-3 text-sm font-semibold text-white">{latestUpload?.fileName ?? 'No documents yet'}</p>
+                <p className="mt-1 text-sm text-slate-300">{latestUpload ? formatDate(latestUpload.createdAt) : 'Upload a file to begin'}</p>
+              </div>
+              <div className="rounded-[20px] border border-white/10 bg-white/10 px-4 py-4 backdrop-blur">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-slate-300">
+                  <BrainCircuit className="h-3.5 w-3.5 text-orange-200" />
+                  Latest question
+                </div>
+                <p className="mt-3 text-sm font-semibold text-white">{latestQuestion?.question ?? 'No question asked yet'}</p>
+                <p className="mt-1 text-sm text-slate-300">{latestQuestion?.documentName ?? 'Use Ask AI to start a trail'}</p>
+              </div>
+              <div className="rounded-[20px] border border-white/10 bg-white/10 px-4 py-4 backdrop-blur">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-slate-300">
+                  <ShieldCheck className="h-3.5 w-3.5 text-orange-200" />
+                  Workspace state
+                </div>
+                <p className="mt-3 text-sm font-semibold text-white">{readyDocuments} ready documents</p>
+                <p className="mt-1 text-sm text-slate-300">
+                  {documents.length === 0 ? 'Waiting for first upload' : `${documents.length - readyDocuments} still preparing or need review`}
+                </p>
+              </div>
+            </div>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button
                 variant="secondary"
@@ -62,7 +98,7 @@ export function DashboardPage() {
               { label: 'Library items', value: `${headlineStats.documentsUploaded}` },
               { label: 'Questions tracked', value: `${headlineStats.questionsAsked}` },
               { label: 'Indexed passages', value: `${headlineStats.totalChunksIndexed}` },
-              { label: 'Average match', value: `${headlineStats.averageSimilarityScore.toFixed(2)}` },
+              { label: 'Average match', value: `${Math.round(headlineStats.averageSimilarityScore * 100)}%` },
             ].map((item) => (
               <div key={item.label} className="rounded-[20px] border border-white/10 bg-white/10 p-5 backdrop-blur">
                 <p className="text-sm text-slate-300">{item.label}</p>
@@ -156,19 +192,27 @@ export function DashboardPage() {
                 <EmptyState
                   icon={Files}
                   title="No documents uploaded yet"
-                  description="Use the upload panel to add your first PDF. The dashboard will fill in as documents move through indexing."
+                  description="Use the upload panel to add your first PDF. Recent uploads, answer activity, and document health will appear here next."
+                  actionLabel="Go to documents"
+                  onAction={() => navigate('/documents')}
                 />
               </div>
             ) : (
-              documents.slice(0, 4).map((document) => (
-                <StaggerItem key={document.documentId}>
+              documents.slice(0, 4).map((document) => {
+                const documentQuestions = questionHistory.filter((entry) => entry.documentId === document.documentId)
+
+                return (
+                  <StaggerItem key={document.documentId}>
                   <DocumentCard
                     document={document}
+                    questionCount={documentQuestions.length}
+                    lastQuestionAt={documentQuestions[0]?.askedAt ?? null}
                     onAsk={() => navigate(`/chat?documentId=${document.documentId}`)}
                     onDelete={(documentId) => void removeDocument(documentId)}
                   />
-                </StaggerItem>
-              ))
+                  </StaggerItem>
+                )
+              })
             )}
           </StaggerContainer>
         </section>
@@ -199,7 +243,9 @@ export function DashboardPage() {
               <EmptyState
                 icon={BrainCircuit}
                 title="No activity yet"
-                description="Your upload, indexing, and Q&A history will appear here as the workspace becomes active."
+                description="Your upload, readiness, and question history will appear here as the workspace becomes active."
+                actionLabel="Open activity"
+                onAction={() => navigate('/activity')}
               />
             </div>
           ) : (

@@ -24,7 +24,7 @@ import type {
   UploadResponse,
 } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
-import { average, formatRelativeTime } from '../lib/utils'
+import { average } from '../lib/utils'
 
 type WorkspaceContextValue = {
   documents: DocumentSummary[]
@@ -189,6 +189,17 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       timestamp: document.createdAt,
     }))
 
+    const indexEvents = documents
+      .filter((document) => document.status === 'READY')
+      .slice(0, 6)
+      .map((document) => ({
+        id: `index-${document.documentId}`,
+        type: 'index' as const,
+        title: `${document.fileName} is ready`,
+        description: `${document.chunkCount} passages prepared for search and question answering`,
+        timestamp: document.createdAt,
+      }))
+
     const questionEvents = questionHistory.slice(0, 6).map((entry) => ({
       id: `question-${entry.id}`,
       type: 'question' as const,
@@ -197,13 +208,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       timestamp: entry.askedAt,
     }))
 
-    return [...uploadEvents, ...questionEvents]
+    return [...uploadEvents, ...indexEvents, ...questionEvents]
       .sort((left, right) => Date.parse(right.timestamp) - Date.parse(left.timestamp))
       .slice(0, 8)
-      .map((event) => ({
-        ...event,
-        description: `${event.description} • ${formatRelativeTime(event.timestamp)}`,
-      }))
   }, [documents, questionHistory])
 
   const value = useMemo<WorkspaceContextValue>(

@@ -10,6 +10,23 @@ export function formatDate(value: string) {
   }).format(new Date(value))
 }
 
+export function formatFileSize(value?: number) {
+  if (!value || value <= 0) {
+    return 'Unknown size'
+  }
+
+  const units = ['B', 'KB', 'MB', 'GB']
+  let size = value
+  let unitIndex = 0
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024
+    unitIndex += 1
+  }
+
+  return `${size.toFixed(size >= 10 || unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`
+}
+
 export function formatRelativeTime(value: string) {
   const date = new Date(value)
   const diffMs = date.getTime() - Date.now()
