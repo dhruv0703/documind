@@ -18,11 +18,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.dhruv.documind.security.ApiRateLimitFilter;
 import com.dhruv.documind.security.CustomUserDetailsService;
 import com.dhruv.documind.security.JwtAuthenticationFilter;
 import com.dhruv.documind.security.RestAccessDeniedHandler;
@@ -33,6 +35,7 @@ import com.dhruv.documind.security.RestAuthenticationEntryPoint;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final ApiRateLimitFilter apiRateLimitFilter;
     private final CustomUserDetailsService userDetailsService;
     private final AppProperties appProperties;
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
@@ -40,12 +43,14 @@ public class SecurityConfig {
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
+            ApiRateLimitFilter apiRateLimitFilter,
             CustomUserDetailsService userDetailsService,
             AppProperties appProperties,
             RestAuthenticationEntryPoint restAuthenticationEntryPoint,
             RestAccessDeniedHandler restAccessDeniedHandler
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.apiRateLimitFilter = apiRateLimitFilter;
         this.userDetailsService = userDetailsService;
         this.appProperties = appProperties;
         this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
@@ -57,6 +62,12 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'none'; frame-ancestors 'none'; base-uri 'none'"))
+                        .referrerPolicy(policy -> policy.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
+                        .frameOptions(frame -> frame.deny())
+                        .permissionsPolicy(permissions -> permissions.policy("camera=(), microphone=(), geolocation=()"))
+                )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(restAuthenticationEntryPoint)
                         .accessDeniedHandler(restAccessDeniedHandler)
@@ -71,6 +82,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
+                .addFilterBefore(apiRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

@@ -21,6 +21,8 @@ public class AppProperties {
     private final Storage storage = new Storage();
     private final Aws aws = new Aws();
     private final Rag rag = new Rag();
+    private final Upload upload = new Upload();
+    private final RateLimit rateLimit = new RateLimit();
 
     @Data
     public static class Cors {
@@ -84,5 +86,24 @@ public class AppProperties {
 
         @Min(1)
         private int embeddingDimension = 1536;
+    }
+
+    @Data
+    public static class Upload {
+        @Min(1024)
+        private long maxFileSizeBytes = 10 * 1024 * 1024L;
+
+        private List<String> allowedContentTypes = new ArrayList<>(List.of("application/pdf"));
+
+        private List<String> allowedExtensions = new ArrayList<>(List.of(".pdf"));
+    }
+
+    @Data
+    public static class RateLimit {
+        @Min(1)
+        private int authRequestsPerMinute = 20;
+
+        @Min(1)
+        private int uploadRequestsPerMinute = 12;
     }
 }

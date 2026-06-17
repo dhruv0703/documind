@@ -1,6 +1,12 @@
 import { motion } from 'framer-motion'
 import { FileUp, UploadCloud } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { formatFileSize } from '../../lib/utils'
+import {
+  ACCEPTED_UPLOAD_ATTRIBUTE,
+  MAX_UPLOAD_SIZE_BYTES,
+  isAcceptedUploadFile,
+} from '../../lib/upload'
 import { useWorkspace } from '../../workspace/WorkspaceContext'
 import { Button } from '../ui/Button'
 
@@ -12,11 +18,37 @@ export function UploadDropzone() {
   const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+  function resetInput() {
+    if (inputRef.current) {
+      inputRef.current.value = ''
+    }
+  }
+
+  function validateFile(file: File) {
+    if (!isAcceptedUploadFile(file)) {
+      return 'Only PDF files are supported for document indexing.'
+    }
+
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+      return `Files larger than ${formatFileSize(MAX_UPLOAD_SIZE_BYTES)} are not supported.`
+    }
+
+    return null
+  }
 
   async function handleFile(file: File) {
-    if (file.type !== 'application/pdf') {
-      setError('Only PDF files are supported.')
+    if (uploading) {
+      return
+    }
+
+    setSelectedFile(file)
+    const validationError = validateFile(file)
+    if (validationError) {
+      setError(validationError)
       setMessage(null)
+      resetInput()
       return
     }
 
@@ -27,13 +59,17 @@ export function UploadDropzone() {
 
     try {
       const response = await uploadPdf(file, setProgress)
-      setMessage(`${response.fileName} uploaded successfully with status ${response.status}.`)
+      setMessage(`${response.fileName} is ready. ${response.chunkCount} passages were prepared for questions.`)
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : 'Upload failed.')
     } finally {
       setUploading(false)
+      resetInput()
     }
   }
+
+  const uploadStage =
+    !uploading ? null : progress < 100 ? 'Uploading file' : 'Preparing passages and indexing document'
 
   return (
     <motion.section
@@ -58,14 +94,31 @@ export function UploadDropzone() {
             ? 'border-orange-300 bg-orange-50/80'
             : 'border-[var(--card-border)] bg-stone-50'
         }`}
+        role="button"
+        tabIndex={0}
+        aria-label="Upload PDF document"
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            if (!uploading) {
+              inputRef.current?.click()
+            }
+          }
+        }}
         onDragOver={(event) => {
           event.preventDefault()
+          if (uploading) {
+            return
+          }
           setDragging(true)
         }}
         onDragLeave={() => setDragging(false)}
         onDrop={(event) => {
           event.preventDefault()
           setDragging(false)
+          if (uploading) {
+            return
+          }
           const file = event.dataTransfer.files[0]
           if (file) {
             void handleFile(file)
@@ -77,20 +130,39 @@ export function UploadDropzone() {
         </div>
         <h4 className="mt-5 text-lg font-semibold text-slate-900">Drag and drop your PDF here</h4>
         <p className="mt-2 text-sm text-slate-500">
-          New files are stored, indexed, and prepared for question answering automatically.
+          New files are stored, indexed, and prepared for question answering automatically. PDF only, up to {formatFileSize(MAX_UPLOAD_SIZE_BYTES)}.
         </p>
+        {selectedFile ? (
+          <div className="mx-auto mt-5 max-w-xl rounded-2xl border border-[var(--card-border)] bg-white px-4 py-4 text-left shadow-[0_8px_18px_rgba(15,23,42,0.03)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Selected file</p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <div>
+                <p className="text-xs text-slate-500">Name</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{selectedFile.name}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Size</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{formatFileSize(selectedFile.size)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Type</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{selectedFile.type || 'application/pdf'}</p>
+              </div>
+            </div>
+          </div>
+        ) : null}
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Button variant="primary" onClick={() => inputRef.current?.click()} loading={uploading}>
+          <Button variant="primary" onClick={() => inputRef.current?.click()} loading={uploading} disabled={uploading}>
             Choose file
           </Button>
-          <Button variant="secondary" onClick={() => inputRef.current?.click()}>
+          <Button variant="secondary" onClick={() => inputRef.current?.click()} disabled={uploading}>
             Browse local files
           </Button>
         </div>
         <input
           ref={inputRef}
           type="file"
-          accept="application/pdf"
+          accept={ACCEPTED_UPLOAD_ATTRIBUTE}
           className="hidden"
           onChange={(event) => {
             const file = event.target.files?.[0]
@@ -104,9 +176,14 @@ export function UploadDropzone() {
       {uploading ? (
         <div className="mt-5">
           <div className="flex items-center justify-between text-sm text-slate-600">
-            <span>Uploading and indexing</span>
+            <span>{uploadStage}</span>
             <span>{progress}%</span>
           </div>
+          <p className="mt-2 text-xs text-slate-500">
+            {progress < 100
+              ? 'Uploading the file to your workspace.'
+              : 'Upload complete. Preparing searchable passages now.'}
+          </p>
           <div className="mt-2 h-2 rounded-full bg-slate-100">
             <div
               className="h-2 rounded-full bg-[linear-gradient(90deg,#fdba74_0%,#f97316_100%)] transition-all"
@@ -116,8 +193,16 @@ export function UploadDropzone() {
         </div>
       ) : null}
 
-      {message ? <p className="mt-4 text-sm text-emerald-600">{message}</p> : null}
-      {error ? <p className="mt-4 text-sm text-rose-600">{error}</p> : null}
+      {message ? (
+        <p className="mt-4 text-sm text-emerald-600" role="status" aria-live="polite">
+          {message}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="mt-4 text-sm text-rose-600" role="alert">
+          {error}
+        </p>
+      ) : null}
     </motion.section>
   )
 }
