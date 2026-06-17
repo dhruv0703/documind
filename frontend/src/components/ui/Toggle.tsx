@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion'
+import { triggerHaptic } from '../../lib/haptics'
 import { cn } from '../../lib/utils'
 import { useUiPreferences } from '../../ui/UiPreferencesContext'
 
@@ -18,6 +19,7 @@ export function Toggle({ checked, onChange, label, description }: ToggleProps) {
       type="button"
       role="switch"
       aria-checked={checked}
+      onPointerDown={() => triggerHaptic('light')}
       onClick={() => onChange(!checked)}
       className="flex w-full items-center justify-between gap-4 rounded-2xl border border-[var(--card-border)] bg-stone-50 px-4 py-4 text-left shadow-[0_6px_18px_rgba(15,23,42,0.03)] active:scale-[0.99]"
       whileHover={prefersReducedMotion || !richMotion ? undefined : { y: -1 }}

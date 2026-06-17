@@ -36,12 +36,12 @@ export function DashboardPage() {
         >
         <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-orange-200">Workspace overview</p>
+            <p className="text-sm uppercase tracking-[0.3em] text-orange-200">Operations overview</p>
             <h1 className="mt-4 font-[family-name:var(--font-display)] text-4xl font-bold tracking-[-0.05em] sm:text-[3.15rem]">
               Welcome back, {firstName}
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-slate-200">
-              Upload documents, generate embeddings, and ask AI-powered questions over your knowledge base.
+              Add documents, review indexed passages, and draft answers across your working library.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button
@@ -59,9 +59,9 @@ export function DashboardPage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             {[
-              { label: 'Vector ready docs', value: `${headlineStats.documentsUploaded}` },
+              { label: 'Library items', value: `${headlineStats.documentsUploaded}` },
               { label: 'Questions tracked', value: `${headlineStats.questionsAsked}` },
-              { label: 'Chunks indexed', value: `${headlineStats.totalChunksIndexed}` },
+              { label: 'Indexed passages', value: `${headlineStats.totalChunksIndexed}` },
               { label: 'Average match', value: `${headlineStats.averageSimilarityScore.toFixed(2)}` },
             ].map((item) => (
               <div key={item.label} className="rounded-[20px] border border-white/10 bg-white/10 p-5 backdrop-blur">
@@ -79,15 +79,15 @@ export function DashboardPage() {
           <StatCard
             title="Documents Uploaded"
             value={`${headlineStats.documentsUploaded}`}
-            detail="Demo-ready workspace total"
+            detail="Current library total"
             icon={Files}
           />
         </StaggerItem>
         <StaggerItem>
           <StatCard
-            title="Total Chunks Indexed"
+            title="Indexed Passages"
             value={`${headlineStats.totalChunksIndexed}`}
-            detail="Indexed for semantic retrieval"
+            detail="Prepared for document search"
             icon={Database}
           />
         </StaggerItem>

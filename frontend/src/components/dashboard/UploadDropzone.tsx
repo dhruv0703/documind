@@ -42,9 +42,9 @@ export function UploadDropzone() {
     >
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-slate-500">Upload panel</p>
+          <p className="text-sm font-semibold text-slate-500">Document intake</p>
           <h3 className="mt-2 font-[family-name:var(--font-display)] text-2xl font-bold tracking-[-0.04em] text-slate-950">
-            Add a new PDF to the knowledge base
+            Add a new PDF to your document library
           </h3>
         </div>
         <div className="grid h-11 w-11 place-items-center rounded-xl bg-[var(--accent-soft)] text-orange-600">
@@ -77,7 +77,7 @@ export function UploadDropzone() {
         </div>
         <h4 className="mt-5 text-lg font-semibold text-slate-900">Drag and drop your PDF here</h4>
         <p className="mt-2 text-sm text-slate-500">
-          Keep your uploads separate from the UI. The backend stores and indexes them independently.
+          New files are stored, indexed, and prepared for question answering automatically.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Button variant="primary" onClick={() => inputRef.current?.click()} loading={uploading}>

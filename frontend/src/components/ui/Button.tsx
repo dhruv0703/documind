@@ -3,6 +3,7 @@ import type { HTMLMotionProps } from 'framer-motion'
 import type { ReactNode } from 'react'
 import { LoaderCircle } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { triggerHaptic } from '../../lib/haptics'
 import { useUiPreferences } from '../../ui/UiPreferencesContext'
 
 type ButtonProps = HTMLMotionProps<'button'> & {
@@ -28,6 +29,7 @@ export function Button({
   type = 'button',
   variant = 'primary',
   disabled,
+  onPointerDown,
   ...props
 }: ButtonProps) {
   const prefersReducedMotion = useReducedMotion()
@@ -42,6 +44,12 @@ export function Button({
         className,
       )}
       disabled={disabled || loading}
+      onPointerDown={(event) => {
+        if (!disabled && !loading) {
+          triggerHaptic('light')
+        }
+        onPointerDown?.(event)
+      }}
       whileHover={prefersReducedMotion || !richMotion || disabled || loading ? undefined : { y: -1.5, scale: 1.01 }}
       whileTap={prefersReducedMotion || !richMotion || disabled || loading ? undefined : { y: 0, scale: 0.98 }}
       transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}

@@ -69,9 +69,9 @@ export function AskPanel({ initialDocumentId }: AskPanelProps) {
     <section className="rounded-[24px] border border-[var(--card-border)] bg-white p-6 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-slate-500">Q&A assistant</p>
+          <p className="text-sm font-semibold text-slate-500">Research assistant</p>
           <h3 className="mt-2 font-[family-name:var(--font-display)] text-2xl font-bold tracking-[-0.04em] text-slate-950">
-            Ask grounded questions over indexed context
+            Ask focused questions over your document library
           </h3>
         </div>
         <div className="grid h-11 w-11 place-items-center rounded-xl bg-[var(--accent-soft)] text-orange-600">
@@ -132,7 +132,7 @@ export function AskPanel({ initialDocumentId }: AskPanelProps) {
 
         <div className="flex items-center justify-between gap-4">
           <p className="text-xs text-slate-500">
-            The backend retrieves top vector matches and answers only from the retrieved context.
+            Answers are drafted from the strongest matching passages in the selected document.
           </p>
           <Button onClick={() => void handleSubmit()} loading={loading}>
             <Sparkles className="h-4 w-4" />

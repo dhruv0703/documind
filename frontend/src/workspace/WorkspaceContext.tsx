@@ -93,7 +93,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       if (isBackendUnavailable(error)) {
         setBackendReachable(false)
-        setDocumentsError('Backend unavailable. Showing cached workspace state.')
+        setDocumentsError('The service is temporarily unavailable. Showing cached workspace data.')
       } else {
         setDocumentsError(error instanceof Error ? error.message : 'Unable to load documents.')
       }

@@ -4,6 +4,7 @@ import { apiBaseUrl } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { StaggerContainer, StaggerItem } from '../components/motion/Stagger'
 import { Toggle } from '../components/ui/Toggle'
+import { triggerHaptic } from '../lib/haptics'
 import { useUiPreferences } from '../ui/UiPreferencesContext'
 
 export function SettingsPage() {
@@ -35,7 +36,7 @@ export function SettingsPage() {
             Workspace configuration
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
-            Core environment details and interaction controls for your local DocuMind workspace.
+            Service details and interface controls for your active DocuMind workspace.
           </p>
 
           <StaggerContainer className="mt-6 grid gap-4 lg:grid-cols-2" delay={0.06}>
@@ -46,11 +47,12 @@ export function SettingsPage() {
                     <ServerCog className="h-5 w-5 text-orange-600" />
                     <div>
                       <p className="font-semibold">API base URL</p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.24em] text-slate-400">Runtime target</p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.24em] text-slate-400">Service endpoint</p>
                     </div>
                   </div>
                   <button
                     type="button"
+                    onPointerDown={() => triggerHaptic('light')}
                     onClick={() => void copyValue(apiBaseUrl, 'api')}
                     className="inline-flex items-center gap-2 rounded-xl border border-[var(--card-border)] bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-[0_6px_18px_rgba(15,23,42,0.04)] transition hover:bg-stone-50 active:scale-[0.98]"
                   >
@@ -69,11 +71,12 @@ export function SettingsPage() {
                     <LockKeyhole className="h-5 w-5 text-orange-600" />
                     <div>
                       <p className="font-semibold">Authenticated user</p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.24em] text-slate-400">Active session</p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.24em] text-slate-400">Active operator</p>
                     </div>
                   </div>
                   <button
                     type="button"
+                    onPointerDown={() => triggerHaptic('light')}
                     onClick={() => void copyValue(user?.email ?? '', 'user')}
                     className="inline-flex items-center gap-2 rounded-xl border border-[var(--card-border)] bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-[0_6px_18px_rgba(15,23,42,0.04)] transition hover:bg-stone-50 active:scale-[0.98]"
                   >
@@ -120,7 +123,7 @@ export function SettingsPage() {
                 checked={showStatusBadge}
                 onChange={setShowStatusBadge}
                 label="Connection badge"
-                description="Show or hide the backend status badge in the header."
+                description="Show or hide the workspace status badge in the header."
               />
             </StaggerItem>
           </StaggerContainer>

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { triggerHaptic } from '../lib/haptics'
 
 const featureCards = [
   {
@@ -19,18 +20,18 @@ const featureCards = [
     icon: FileUp,
   },
   {
-    title: 'RAG Question Answering',
-    description: 'Ask natural-language questions and retrieve grounded answers over indexed context.',
+    title: 'Document Q&A',
+    description: 'Ask natural-language questions and get answers shaped around the strongest matching passages.',
     icon: MessageSquareQuote,
   },
   {
-    title: 'AWS S3 Storage',
-    description: 'Store source documents with a clean separation between app runtime and file storage.',
+    title: 'Flexible storage',
+    description: 'Keep source files separate from the app runtime with a storage layer built for deployment.',
     icon: CloudCog,
   },
   {
-    title: 'pgvector Semantic Search',
-    description: 'Use cosine similarity over embeddings to find the most relevant document chunks.',
+    title: 'Fast document search',
+    description: 'Surface the most relevant passages quickly so answers stay anchored to source material.',
     icon: DatabaseZap,
   },
   {
@@ -47,11 +48,11 @@ const featureCards = [
 
 const architectureSteps = [
   'PDF Upload',
-  'S3',
-  'PDFBox',
-  'Spring AI Embeddings',
-  'PostgreSQL pgvector',
-  'RAG Answer',
+  'Storage',
+  'Text extraction',
+  'Search preparation',
+  'PostgreSQL',
+  'Source-backed answer',
 ]
 
 const techBadges = [
@@ -80,19 +81,21 @@ export function LandingPage() {
             </div>
             <div>
               <p className="font-[family-name:var(--font-display)] text-lg font-bold text-slate-950">DocuMind AI</p>
-              <p className="text-xs uppercase tracking-[0.26em] text-slate-400">RAG platform</p>
+              <p className="text-xs uppercase tracking-[0.26em] text-slate-400">Document workspace</p>
             </div>
           </div>
 
           <nav className="flex items-center gap-3">
             <Link
               to="/login"
+              onPointerDown={() => triggerHaptic('light')}
               className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Login
             </Link>
             <button
               type="button"
+              onPointerDown={() => triggerHaptic('light')}
               onClick={() => navigate(user ? '/dashboard' : '/login')}
               className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#2563eb_0%,#4f46e5_55%,#7c3aed_100%)] px-4 py-2 text-sm font-semibold text-white shadow-[0_16px_28px_rgba(79,70,229,0.22)] transition hover:translate-y-[-1px]"
             >
@@ -107,17 +110,17 @@ export function LandingPage() {
         <section className="overflow-hidden rounded-[36px] border border-white/60 bg-[linear-gradient(135deg,#0f172a_0%,#172554_34%,#312e81_70%,#6d28d9_100%)] px-7 py-10 text-white shadow-[0_30px_100px_rgba(15,23,42,0.24)] sm:px-10 lg:px-12">
           <div className="grid gap-10 lg:grid-cols-[1.12fr_0.88fr] lg:items-center">
             <div>
-              <p className="text-sm uppercase tracking-[0.34em] text-sky-200">AI document intelligence</p>
+              <p className="text-sm uppercase tracking-[0.34em] text-sky-200">AI document workspace</p>
               <h1 className="mt-5 max-w-3xl font-[family-name:var(--font-display)] text-5xl font-bold tracking-[-0.06em] sm:text-6xl">
-                Chat with your documents using AI
+                Review, search, and question your documents from one focused workspace
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200">
-                Upload PDFs, generate embeddings, and ask natural-language questions using Spring AI,
-                PostgreSQL pgvector, and AWS.
+                Bring PDFs into a clean operating view, find the right passages quickly, and draft answers without losing the source context.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <button
                   type="button"
+                  onPointerDown={() => triggerHaptic('light')}
                   onClick={() => navigate(user ? '/dashboard' : '/login')}
                   className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 shadow-[0_14px_28px_rgba(255,255,255,0.14)] transition hover:translate-y-[-1px]"
                 >
@@ -138,10 +141,10 @@ export function LandingPage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               {[
-                { label: 'Retrieval', value: 'pgvector search' },
-                { label: 'Embeddings', value: 'Spring AI + OpenAI' },
-                { label: 'Storage', value: 'AWS S3 / local fallback' },
-                { label: 'Security', value: 'JWT protected routes' },
+                { label: 'Search layer', value: 'Passage-first retrieval' },
+                { label: 'Response engine', value: 'Spring AI + Groq' },
+                { label: 'Storage', value: 'Cloud-ready document storage' },
+                { label: 'Security', value: 'Protected account sessions' },
               ].map((item) => (
                 <div key={item.label} className="rounded-[24px] border border-white/10 bg-white/10 p-5 backdrop-blur">
                   <p className="text-sm text-slate-300">{item.label}</p>
@@ -156,7 +159,7 @@ export function LandingPage() {
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-indigo-500">Core capabilities</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl font-bold tracking-[-0.05em] text-slate-950">
-              Purpose-built for secure document retrieval workflows
+              Built for secure document review and answer workflows
             </h2>
           </div>
 
@@ -186,7 +189,7 @@ export function LandingPage() {
           <section className="rounded-[30px] border border-[var(--card-border)] bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)] sm:p-8">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-indigo-500">Architecture flow</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl font-bold tracking-[-0.05em] text-slate-950">
-              From PDF upload to grounded RAG answer
+              From upload to source-backed answer
             </h2>
 
             <div className="mt-8 flex flex-col gap-3">
@@ -231,7 +234,7 @@ export function LandingPage() {
                 <div>
                   <p className="text-sm font-semibold text-slate-900">Built for demo clarity</p>
                   <p className="mt-2 text-sm leading-7 text-slate-600">
-                    Clear ingestion flow, secure auth, vector search, and cited answers from one polished workspace.
+                    Clear document intake, secure auth, focused search, and answer drafting from one polished workspace.
                   </p>
                 </div>
               </div>

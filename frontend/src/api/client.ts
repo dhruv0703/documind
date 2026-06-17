@@ -40,7 +40,7 @@ function normalizeError(error: unknown): AppApiError {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<{ message?: string }>
     const message = axiosError.code === 'ECONNABORTED'
-      ? 'The backend is still waking up on Render. Please try again in a few seconds.'
+      ? 'The service is still waking up on Render. Please try again in a few seconds.'
       : axiosError.response?.data?.message ||
         axiosError.message ||
         'The request could not be completed.'

@@ -3,6 +3,7 @@ import { Bell, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
+import { triggerHaptic } from '../../lib/haptics'
 import { initials } from '../../lib/utils'
 import { useUiPreferences } from '../../ui/UiPreferencesContext'
 
@@ -37,7 +38,7 @@ export function Topbar() {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search documents..."
+            placeholder="Search your library..."
             className="w-full border-none bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
           />
         </div>
@@ -45,13 +46,14 @@ export function Topbar() {
         <div className="flex items-center justify-between gap-4 xl:justify-end">
           {showStatusBadge ? (
             <div className="hidden rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 sm:inline-flex">
-              {offline ? 'Offline-safe mode' : 'Backend connected'}
+              {offline ? 'Offline-safe mode' : 'Workspace live'}
             </div>
           ) : null}
 
           <div className="relative">
             <motion.button
               type="button"
+              onPointerDown={() => triggerHaptic('light')}
               onClick={() => setNotificationsOpen((current) => !current)}
               className="relative rounded-xl border border-[var(--card-border)] bg-white p-3 text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.04)] active:scale-[0.985]"
               whileHover={prefersReducedMotion || !richMotion ? undefined : { y: -1, scale: 1.02 }}
@@ -88,6 +90,7 @@ export function Topbar() {
                   <p className="text-sm font-semibold text-slate-900">Notifications</p>
                   <button
                     type="button"
+                    onPointerDown={() => triggerHaptic('light')}
                     onClick={() => setNotificationsRead(true)}
                     className="text-xs font-semibold text-orange-600 hover:text-orange-500"
                   >
@@ -96,13 +99,13 @@ export function Topbar() {
                 </div>
                 <div className="mt-3 space-y-3">
                   <div className="rounded-xl bg-stone-50 px-3 py-3 text-sm text-slate-600">
-                    Backend is connected and ready for uploads.
+                    Your workspace service is online and ready for new documents.
                   </div>
                   <div className="rounded-xl bg-stone-50 px-3 py-3 text-sm text-slate-600">
-                    JWT auth is active for documents and chat routes.
+                    Account protection is active for your library and assistant tools.
                   </div>
                   <div className="rounded-xl bg-stone-50 px-3 py-3 text-sm text-slate-600">
-                    Use Settings to toggle motion and demo metrics.
+                    Use Settings to adjust motion, metrics, and connection indicators.
                   </div>
                 </div>
               </motion.div>

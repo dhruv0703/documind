@@ -47,30 +47,30 @@ export function LoginPage() {
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[linear-gradient(135deg,#fb923c_0%,#f97316_100%)] text-xl font-black shadow-[0_16px_30px_rgba(249,115,22,0.28)]">D</div>
             <div>
               <p className="font-[family-name:var(--font-display)] text-2xl font-bold">DocuMind AI</p>
-              <p className="text-sm text-slate-300">Secure RAG control panel</p>
+              <p className="text-sm text-slate-300">Private document workspace</p>
             </div>
           </div>
 
           <div className="max-w-xl">
-            <p className="text-sm uppercase tracking-[0.35em] text-orange-200">Production workspace</p>
+            <p className="text-sm uppercase tracking-[0.35em] text-orange-200">Private workspace</p>
             <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl font-bold tracking-[-0.05em]">
-              Navigate your private document knowledge base with grounded AI answers.
+              Review important documents and ask clear questions in one secure place.
             </h1>
             <p className="mt-6 text-lg leading-8 text-slate-300">
-              Upload PDFs, monitor indexing, and ask questions over embeddings stored in pgvector.
+              Keep reports, contracts, and research notes in one workspace built for fast answers and clean handoffs.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-[22px] border border-white/10 bg-white/8 p-5 backdrop-blur">
               <ShieldCheck className="h-5 w-5 text-orange-200" />
-              <p className="mt-4 text-sm font-semibold">JWT secured</p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">Protected document and chat routes.</p>
+              <p className="mt-4 text-sm font-semibold">Protected access</p>
+              <p className="mt-2 text-sm leading-6 text-slate-300">Private sessions for your documents and account activity.</p>
             </div>
             <div className="rounded-[22px] border border-white/10 bg-white/8 p-5 backdrop-blur">
               <KeyRound className="h-5 w-5 text-sky-200" />
-              <p className="mt-4 text-sm font-semibold">Grounded retrieval</p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">Answers reference indexed document snippets.</p>
+              <p className="mt-4 text-sm font-semibold">Source-backed answers</p>
+              <p className="mt-2 text-sm leading-6 text-slate-300">Responses stay tied to the passages found in your library.</p>
             </div>
           </div>
         </div>
@@ -83,7 +83,7 @@ export function LoginPage() {
             Sign in to DocuMind AI
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-500">
-            Continue into your document dashboard and retrieval workspace.
+            Continue to your document workspace and recent activity.
           </p>
 
           <form className="mt-8 space-y-4" onSubmit={handleSubmit}>

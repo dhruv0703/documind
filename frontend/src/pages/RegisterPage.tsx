@@ -41,12 +41,12 @@ export function RegisterPage() {
     <div className="grid min-h-screen bg-[var(--app-shell)] lg:grid-cols-[0.95fr_1.05fr]">
       <section className="flex items-center justify-center px-6 py-10 sm:px-8">
         <div className="w-full max-w-md rounded-[24px] border border-[var(--card-border)] bg-white p-8 shadow-[0_14px_34px_rgba(15,23,42,0.06)]">
-          <p className="text-sm uppercase tracking-[0.3em] text-orange-500">Create workspace</p>
+          <p className="text-sm uppercase tracking-[0.3em] text-orange-500">Create account</p>
           <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl font-bold tracking-[-0.05em] text-slate-950">
             Start with a secure DocuMind account
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-500">
-            Set up JWT-backed access before uploading or asking over documents.
+            Set up access before uploading files, reviewing sources, or drafting answers.
           </p>
 
           <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
@@ -107,10 +107,10 @@ export function RegisterPage() {
           <div className="max-w-xl rounded-[24px] border border-white/10 bg-white/8 p-8 backdrop-blur">
             <ShieldPlus className="h-6 w-6 text-orange-200" />
             <h3 className="mt-5 font-[family-name:var(--font-display)] text-4xl font-bold tracking-[-0.05em]">
-              Build a private AI document command center.
+              Build a private workspace for your important documents.
             </h3>
             <p className="mt-4 text-base leading-7 text-slate-300">
-              A dedicated workspace for uploads, semantic retrieval, answer citations, and indexing visibility.
+              Keep uploads, document history, and question workflows together in one clean operating view.
             </p>
           </div>
         </div>

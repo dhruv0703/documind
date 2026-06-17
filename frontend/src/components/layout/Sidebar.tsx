@@ -12,6 +12,7 @@ import {
 import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
+import { triggerHaptic } from '../../lib/haptics'
 import { cn } from '../../lib/utils'
 import { useUiPreferences } from '../../ui/UiPreferencesContext'
 
@@ -60,6 +61,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
         <motion.button
           type="button"
+          onPointerDown={() => triggerHaptic('light')}
           onClick={() => setOpen(false)}
           className="rounded-xl p-2 text-slate-300 hover:bg-white/10 lg:hidden"
           whileTap={richMotion ? { scale: 0.94 } : undefined}
@@ -69,9 +71,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       </div>
 
       <div className="mt-8 rounded-2xl border border-white/10 bg-white/6 p-4">
-        <p className="text-xs uppercase tracking-[0.24em] text-orange-300">Workspace status</p>
+        <p className="text-xs uppercase tracking-[0.24em] text-orange-300">Workspace snapshot</p>
         <p className="mt-3 text-sm leading-6 text-slate-200">
-          PDF ingestion, semantic retrieval, and grounded answers from one operator console.
+          Upload documents, review source passages, and draft answers from one focused workspace.
         </p>
       </div>
 
@@ -102,6 +104,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             >
               <NavLink
                 to={item.to}
+                onPointerDown={() => triggerHaptic('light')}
                 onClick={() => setOpen(false)}
                 className={({ isActive }) =>
                   cn(
@@ -122,6 +125,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
       <motion.button
         type="button"
+        onPointerDown={() => triggerHaptic('light')}
         onClick={logout}
         className="mt-6 flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10"
         whileHover={richMotion ? { y: -1 } : undefined}
@@ -137,6 +141,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
     <>
       <motion.button
         type="button"
+        onPointerDown={() => triggerHaptic('light')}
         onClick={() => setOpen(true)}
         className="fixed left-4 top-4 z-40 rounded-xl border border-black/10 bg-[var(--sidebar-bg)] p-3 text-white shadow-lg lg:hidden"
         whileTap={richMotion ? { scale: 0.94 } : undefined}
