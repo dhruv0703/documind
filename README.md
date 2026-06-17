@@ -99,7 +99,7 @@ RAG_EMBEDDING_DIMENSION=1536
 Frontend `.env` example:
 
 ```env
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_URL=http://localhost:8080
 ```
 
 ### Start PostgreSQL + pgvector with Docker Compose
@@ -391,14 +391,44 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 ### Render Notes
 
-- The blueprint sets frontend `VITE_API_BASE_URL` to `https://documind-backend.onrender.com`.
-- If Render assigns a different backend subdomain, update `VITE_API_BASE_URL` in the frontend service and redeploy it.
-- The backend CORS setting allows `https://*.onrender.com` for demo hosting.
+- The blueprint sets frontend `VITE_API_URL` to `https://documind-backend-ylcw.onrender.com`.
+- If Render assigns a different backend subdomain, update `VITE_API_URL` in the frontend service and redeploy it.
+- The backend CORS setting is pinned to `https://documind-frontend-5rk8.onrender.com` plus local development at `http://localhost:5173`.
 - Free Render web services spin down after 15 minutes of inactivity, so the first request after idle will be slow.
 - Free Render web services use an ephemeral filesystem, so uploaded PDF files can disappear after restart or spin-down.
 - The backend accepts either `DB_URL` directly or `DATABASE_URL`; on Render, a `postgresql://...` `DATABASE_URL` is converted to JDBC form automatically.
 - Groq is wired through an OpenAI-compatible endpoint, so the app still uses Spring AI’s OpenAI client configuration internally.
 - If your Neon database is in a different region than the Render backend, expect higher latency.
+
+## Vercel Frontend Deployment
+
+The frontend can also be deployed to Vercel as a static Vite app while keeping the Spring Boot API on Render.
+
+### Vercel Setup
+
+1. Import the GitHub repository into Vercel.
+2. Set the project root to `frontend`.
+3. Use these build settings:
+
+```text
+Build Command: npm run build
+Output Directory: dist
+Install Command: npm ci
+```
+
+4. Add this environment variable in Vercel:
+
+```env
+VITE_API_URL=https://documind-backend-ylcw.onrender.com
+```
+
+5. Redeploy after changing any frontend environment variable.
+
+### Vercel Notes
+
+- Vercel environment variables are injected at build time, not runtime.
+- If the backend domain changes, update `VITE_API_URL` and trigger a new deployment.
+- The backend must allow the Vercel frontend origin in `APP_CORS_ALLOWED_ORIGINS` before browser requests will succeed.
 
 ## Resume Bullets for Dhruv Shah
 

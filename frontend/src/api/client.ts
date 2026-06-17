@@ -13,7 +13,10 @@ export const AUTH_TOKEN_KEY = 'documind.auth.token'
 export const AUTH_USER_KEY = 'documind.auth.user'
 export const QUESTION_HISTORY_KEY = 'documind.question.history'
 
-export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+export const apiBaseUrl =
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  'http://localhost:8080'
 const apiTimeoutMs = Number(import.meta.env.VITE_API_TIMEOUT_MS || 65000)
 
 export type AppApiError = Error & {
