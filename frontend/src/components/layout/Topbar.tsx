@@ -23,7 +23,8 @@ export function Topbar() {
   const prefersReducedMotion = useReducedMotion()
   const location = useLocation()
   const navigate = useNavigate()
-  const containerRef = useRef<HTMLDivElement | null>(null)
+  const searchContainerRef = useRef<HTMLDivElement | null>(null)
+  const notificationsRef = useRef<HTMLDivElement | null>(null)
   const [query, setQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
@@ -87,8 +88,14 @@ export function Topbar() {
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node
+
+      if (!searchContainerRef.current?.contains(target)) {
         setSearchOpen(false)
+      }
+
+      if (!notificationsRef.current?.contains(target)) {
+        setNotificationsOpen(false)
       }
     }
 
@@ -98,6 +105,7 @@ export function Topbar() {
 
   useEffect(() => {
     setSearchOpen(false)
+    setNotificationsOpen(false)
     setQuery('')
   }, [location.pathname, location.search])
 
@@ -129,12 +137,15 @@ export function Topbar() {
       </div>
 
       <div className="flex flex-1 flex-col gap-4 xl:max-w-3xl xl:flex-row xl:items-center xl:justify-end">
-        <div ref={containerRef} className="relative flex-1">
+        <div ref={searchContainerRef} className="relative flex-1">
           <div className="flex items-center gap-3 rounded-xl border border-[var(--card-border)] bg-stone-50 px-4 py-3">
             <Search className="h-4 w-4 text-slate-400" />
             <input
               value={query}
-              onFocus={() => setSearchOpen(true)}
+              onFocus={() => {
+                setNotificationsOpen(false)
+                setSearchOpen(true)
+              }}
               onChange={(event) => {
                 setQuery(event.target.value)
                 setSearchOpen(true)
@@ -152,6 +163,19 @@ export function Topbar() {
               placeholder="Search your library..."
               className="w-full border-none bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
             />
+            <button
+              type="button"
+              onPointerDown={() => triggerHaptic('light')}
+              onClick={() => {
+                setNotificationsOpen(false)
+                setSearchOpen(true)
+                handleSearchSubmit()
+              }}
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-orange-200 hover:text-orange-600"
+              aria-label="Search workspace"
+            >
+              <Search className="h-4 w-4" />
+            </button>
           </div>
 
           <AnimatePresence>
@@ -213,11 +237,14 @@ export function Topbar() {
             </div>
           ) : null}
 
-          <div className="relative">
+          <div ref={notificationsRef} className="relative">
             <motion.button
               type="button"
               onPointerDown={() => triggerHaptic('light')}
-              onClick={() => setNotificationsOpen((current) => !current)}
+              onClick={() => {
+                setSearchOpen(false)
+                setNotificationsOpen((current) => !current)
+              }}
               className="relative rounded-xl border border-[var(--card-border)] bg-white p-3 text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.04)] active:scale-[0.985]"
               whileHover={prefersReducedMotion || !richMotion ? undefined : { y: -1, scale: 1.02 }}
               whileTap={prefersReducedMotion || !richMotion ? undefined : { scale: 0.97 }}
@@ -254,7 +281,10 @@ export function Topbar() {
                   <button
                     type="button"
                     onPointerDown={() => triggerHaptic('light')}
-                    onClick={() => setNotificationsRead(true)}
+                    onClick={() => {
+                      setNotificationsRead(true)
+                      setNotificationsOpen(false)
+                    }}
                     className="text-xs font-semibold text-orange-600 hover:text-orange-500"
                   >
                     Mark all read
