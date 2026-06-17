@@ -11,9 +11,16 @@ import { formatDate } from '../lib/utils'
 export function ChatPage() {
   const [searchParams] = useSearchParams()
   const initialDocumentId = searchParams.get('documentId') || undefined
+  const selectedQuestionId = searchParams.get('questionId')
   const { documents, questionHistory } = useWorkspace()
 
-  const latestQuestion = useMemo(() => questionHistory[0] ?? null, [questionHistory])
+  const latestQuestion = useMemo(
+    () =>
+      (selectedQuestionId
+        ? questionHistory.find((entry) => entry.id === selectedQuestionId)
+        : null) ?? questionHistory[0] ?? null,
+    [questionHistory, selectedQuestionId],
+  )
   const latestDocument = useMemo(
     () => documents.find((document) => document.documentId === latestQuestion?.documentId) ?? null,
     [documents, latestQuestion],

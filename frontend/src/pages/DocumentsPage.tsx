@@ -1,6 +1,6 @@
 import { FileText } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { DocumentDetailPanel } from '../components/dashboard/DocumentDetailPanel'
 import { DocumentCard } from '../components/dashboard/DocumentCard'
 import { EmptyState } from '../components/dashboard/EmptyState'
@@ -11,13 +11,20 @@ import { useWorkspace } from '../workspace/WorkspaceContext'
 export function DocumentsPage() {
   const { documents, questionHistory, removeDocument } = useWorkspace()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const requestedDocumentId = searchParams.get('documentId') || ''
   const [selectedDocumentId, setSelectedDocumentId] = useState('')
 
   useEffect(() => {
+    if (requestedDocumentId && documents.some((document) => document.documentId === requestedDocumentId)) {
+      setSelectedDocumentId(requestedDocumentId)
+      return
+    }
+
     if (!selectedDocumentId && documents[0]) {
       setSelectedDocumentId(documents[0].documentId)
     }
-  }, [documents, selectedDocumentId])
+  }, [documents, requestedDocumentId, selectedDocumentId])
 
   useEffect(() => {
     if (selectedDocumentId && !documents.some((document) => document.documentId === selectedDocumentId)) {

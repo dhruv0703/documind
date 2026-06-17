@@ -1,18 +1,31 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { Bell, Search } from 'lucide-react'
-import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Bell, FileText, History, MessageSquareText, Search } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import { triggerHaptic } from '../../lib/haptics'
 import { initials } from '../../lib/utils'
 import { useUiPreferences } from '../../ui/UiPreferencesContext'
+import { useWorkspace } from '../../workspace/WorkspaceContext'
+
+type SearchResult = {
+  id: string
+  type: 'document' | 'question' | 'activity'
+  title: string
+  subtitle: string
+  href: string
+}
 
 export function Topbar() {
   const { user, offline } = useAuth()
+  const { documents, questionHistory, recentActivity } = useWorkspace()
   const { showStatusBadge, richMotion } = useUiPreferences()
   const prefersReducedMotion = useReducedMotion()
   const location = useLocation()
+  const navigate = useNavigate()
+  const containerRef = useRef<HTMLDivElement | null>(null)
   const [query, setQuery] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [notificationsRead, setNotificationsRead] = useState(false)
   const pageTitle = {
@@ -22,6 +35,89 @@ export function Topbar() {
     '/activity': 'Activity',
     '/settings': 'Settings',
   }[location.pathname] ?? 'Dashboard'
+  const normalizedQuery = query.trim().toLowerCase()
+  const searchResults = useMemo<SearchResult[]>(() => {
+    if (normalizedQuery.length < 2) {
+      return []
+    }
+
+    const documentResults = documents
+      .filter((document) =>
+        [document.fileName, document.status].some((value) => value.toLowerCase().includes(normalizedQuery)),
+      )
+      .slice(0, 4)
+      .map((document) => ({
+        id: `document-${document.documentId}`,
+        type: 'document' as const,
+        title: document.fileName,
+        subtitle: `${document.status} • ${document.chunkCount} passages`,
+        href: `/documents?documentId=${document.documentId}`,
+      }))
+
+    const questionResults = questionHistory
+      .filter((entry) =>
+        [entry.question, entry.answer, entry.documentName].some((value) =>
+          value.toLowerCase().includes(normalizedQuery),
+        ),
+      )
+      .slice(0, 4)
+      .map((entry) => ({
+        id: `question-${entry.id}`,
+        type: 'question' as const,
+        title: entry.question,
+        subtitle: entry.documentName,
+        href: `/chat?documentId=${entry.documentId}&questionId=${entry.id}`,
+      }))
+
+    const activityResults = recentActivity
+      .filter((entry) =>
+        [entry.title, entry.description].some((value) => value.toLowerCase().includes(normalizedQuery)),
+      )
+      .slice(0, 4)
+      .map((entry) => ({
+        id: `activity-${entry.id}`,
+        type: 'activity' as const,
+        title: entry.title,
+        subtitle: entry.description,
+        href: '/activity',
+      }))
+
+    return [...documentResults, ...questionResults, ...activityResults].slice(0, 8)
+  }, [documents, normalizedQuery, questionHistory, recentActivity])
+
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setSearchOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    return () => document.removeEventListener('mousedown', handlePointerDown)
+  }, [])
+
+  useEffect(() => {
+    setSearchOpen(false)
+    setQuery('')
+  }, [location.pathname, location.search])
+
+  function handleResultNavigation(href: string) {
+    triggerHaptic('light')
+    setSearchOpen(false)
+    navigate(href)
+  }
+
+  function handleSearchSubmit() {
+    if (searchResults[0]) {
+      handleResultNavigation(searchResults[0].href)
+    }
+  }
+
+  const searchIconMap = {
+    document: FileText,
+    question: MessageSquareText,
+    activity: History,
+  }
 
   return (
     <header className="flex flex-col gap-4 rounded-[22px] border border-[var(--card-border)] bg-white px-5 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.04)] xl:flex-row xl:items-center xl:justify-between">
@@ -33,14 +129,81 @@ export function Topbar() {
       </div>
 
       <div className="flex flex-1 flex-col gap-4 xl:max-w-3xl xl:flex-row xl:items-center xl:justify-end">
-        <div className="flex flex-1 items-center gap-3 rounded-xl border border-[var(--card-border)] bg-stone-50 px-4 py-3">
-          <Search className="h-4 w-4 text-slate-400" />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search your library..."
-            className="w-full border-none bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
-          />
+        <div ref={containerRef} className="relative flex-1">
+          <div className="flex items-center gap-3 rounded-xl border border-[var(--card-border)] bg-stone-50 px-4 py-3">
+            <Search className="h-4 w-4 text-slate-400" />
+            <input
+              value={query}
+              onFocus={() => setSearchOpen(true)}
+              onChange={(event) => {
+                setQuery(event.target.value)
+                setSearchOpen(true)
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  handleSearchSubmit()
+                }
+
+                if (event.key === 'Escape') {
+                  setSearchOpen(false)
+                }
+              }}
+              placeholder="Search your library..."
+              className="w-full border-none bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+            />
+          </div>
+
+          <AnimatePresence>
+            {searchOpen ? (
+              <motion.div
+                initial={prefersReducedMotion || !richMotion ? undefined : { opacity: 0, y: 8, scale: 0.99 }}
+                animate={prefersReducedMotion || !richMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+                exit={prefersReducedMotion || !richMotion ? undefined : { opacity: 0, y: 8, scale: 0.99 }}
+                transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute left-0 right-0 top-[calc(100%+10px)] z-30 rounded-2xl border border-[var(--card-border)] bg-white p-3 shadow-[0_22px_50px_rgba(15,23,42,0.12)]"
+              >
+                {normalizedQuery.length < 2 ? (
+                  <div className="rounded-xl bg-stone-50 px-4 py-4 text-sm text-slate-500">
+                    Type at least 2 letters to search documents, questions, and activity.
+                  </div>
+                ) : searchResults.length === 0 ? (
+                  <div className="rounded-xl bg-stone-50 px-4 py-4 text-sm text-slate-500">
+                    No matches found for "{query}".
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {searchResults.map((result) => {
+                      const Icon = searchIconMap[result.type]
+
+                      return (
+                        <button
+                          key={result.id}
+                          type="button"
+                          onPointerDown={() => triggerHaptic('light')}
+                          onClick={() => handleResultNavigation(result.href)}
+                          className="flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-stone-50"
+                        >
+                          <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--accent-soft)] text-orange-600">
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="truncate text-sm font-semibold text-slate-900">{result.title}</p>
+                              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                                {result.type}
+                              </span>
+                            </div>
+                            <p className="mt-1 truncate text-sm text-slate-500">{result.subtitle}</p>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </div>
 
         <div className="flex items-center justify-between gap-4 xl:justify-end">
