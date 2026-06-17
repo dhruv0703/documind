@@ -50,8 +50,17 @@ type WorkspaceContextValue = {
 
 const WorkspaceContext = createContext<WorkspaceContextValue | undefined>(undefined)
 
-function readQuestionHistory() {
-  const raw = localStorage.getItem(QUESTION_HISTORY_KEY)
+function questionHistoryStorageKey(userId?: string) {
+  return userId ? `${QUESTION_HISTORY_KEY}.${userId}` : null
+}
+
+function readQuestionHistory(userId?: string) {
+  const storageKey = questionHistoryStorageKey(userId)
+  if (!storageKey) {
+    return [] as QuestionRecord[]
+  }
+
+  const raw = localStorage.getItem(storageKey)
 
   if (!raw) {
     return [] as QuestionRecord[]
@@ -70,11 +79,29 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [documentsLoading, setDocumentsLoading] = useState(false)
   const [documentsError, setDocumentsError] = useState<string | null>(null)
   const [backendReachable, setBackendReachable] = useState(true)
-  const [questionHistory, setQuestionHistory] = useState<QuestionRecord[]>(() => readQuestionHistory())
+  const [questionHistory, setQuestionHistory] = useState<QuestionRecord[]>([])
 
   useEffect(() => {
-    localStorage.setItem(QUESTION_HISTORY_KEY, JSON.stringify(questionHistory))
-  }, [questionHistory])
+    localStorage.removeItem(QUESTION_HISTORY_KEY)
+  }, [])
+
+  useEffect(() => {
+    if (!user?.id) {
+      setQuestionHistory([])
+      return
+    }
+
+    setQuestionHistory(readQuestionHistory(user.id))
+  }, [user?.id])
+
+  useEffect(() => {
+    const storageKey = questionHistoryStorageKey(user?.id)
+    if (!storageKey) {
+      return
+    }
+
+    localStorage.setItem(storageKey, JSON.stringify(questionHistory))
+  }, [questionHistory, user?.id])
 
   const refreshDocuments = useCallback(async () => {
     if (!token) {
