@@ -27,6 +27,20 @@ if [ -n "${DATABASE_URL:-}" ] && [ -z "${DB_URL:-}" ]; then
   esac
 fi
 
+if [ -n "${OPENAI_COMPAT_API_KEY:-}" ]; then
+  if [ -z "${SPRING_AI_OPENAI_API_KEY:-}" ]; then
+    export SPRING_AI_OPENAI_API_KEY="$OPENAI_COMPAT_API_KEY"
+  fi
+
+  if [ -z "${SPRING_AI_OPENAI_CHAT_API_KEY:-}" ]; then
+    export SPRING_AI_OPENAI_CHAT_API_KEY="$OPENAI_COMPAT_API_KEY"
+  fi
+
+  if [ -z "${SPRING_AI_OPENAI_EMBEDDING_API_KEY:-}" ]; then
+    export SPRING_AI_OPENAI_EMBEDDING_API_KEY="$OPENAI_COMPAT_API_KEY"
+  fi
+fi
+
 if [ -n "${GEMINI_API_KEY:-}" ]; then
   if [ -z "${SPRING_AI_OPENAI_API_KEY:-}" ]; then
     export SPRING_AI_OPENAI_API_KEY="$GEMINI_API_KEY"
